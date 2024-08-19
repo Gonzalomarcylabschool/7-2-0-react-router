@@ -11,7 +11,6 @@ const createProductHTML = (product) => `
 const aboutHTML = `
   <section id="content">
     <h1>About Us</h1>
-    <p>We are a small company that sells products online.</p>
   </section>
 `
 
@@ -19,9 +18,9 @@ const productsHTML = `
   <section id="content">
     <h1>Products</h1>
     <ul>
-      <li><a href="/products.html?id=1">Product 1</a></li>
-      <li><a href="/products.html?id=2">Product 2</a></li>
-      <li><a href="/products.html?id=3">Product 3</a></li>
+      <li><a href="/products?id=1">Product 1</a></li>
+      <li><a href="/products?id=2">Product 2</a></li>
+      <li><a href="/products?id=3">Product 3</a></li>
     </ul>
   </section>
 `
@@ -45,24 +44,19 @@ const product3 = {
 }
 
 const handleNavigation = (e) => {
-  // Only handle clicks on anchor elements
   if (e.target.tagName === 'A') {
     e.preventDefault()
-    const path = e.target.getAttribute('href')
+    const path = new URL(e.target.href).pathname
+    const searchParams = new URL(e.target.href).searchParams
+    const id = searchParams.get('id')
 
-    // Use history.pushState to update the URL without reloading the page
-    history.pushState(null, '', path)
+    history.pushState(null, '', path + (id ? `?id=${id}` : ''))
 
-    if (path.includes('index.html')) {
-      document.querySelector('#content').innerHTML = `
-        <h1>Dashboard</h1>
-      `
-    } else if (path.includes('about.html')) {
+    if (path === '/index.html' || path === '/') {
+      document.querySelector('#content').innerHTML = `<h1>Dashboard</h1>`
+    } else if (path === '/about') {
       document.querySelector('#content').innerHTML = aboutHTML
-    } else if (path.includes('products.html')) {
-      const query = new URLSearchParams(path.split('?')[1])
-      const id = query.get('id')
-
+    } else if (path === '/products') {
       if (id === '1') {
         document.querySelector('#content').innerHTML = createProductHTML(product1)
       } else if (id === '2') {
@@ -76,32 +70,6 @@ const handleNavigation = (e) => {
   }
 }
 
-// Handle back/forward navigation using the browser's history
-window.onpopstate = () => {
-  const path = window.location.pathname + window.location.search
-
-  if (path.includes('index.html')) {
-    document.querySelector('#content').innerHTML = `
-      <h1>Dashboard</h1>
-    `
-  } else if (path.includes('about.html')) {
-    document.querySelector('#content').innerHTML = aboutHTML
-  } else if (path.includes('products.html')) {
-    const query = new URLSearchParams(path.split('?')[1])
-    const id = query.get('id')
-
-    if (id === '1') {
-      document.querySelector('#content').innerHTML = createProductHTML(product1)
-    } else if (id === '2') {
-      document.querySelector('#content').innerHTML = createProductHTML(product2)
-    } else if (id === '3') {
-      document.querySelector('#content').innerHTML = createProductHTML(product3)
-    } else {
-      document.querySelector('#content').innerHTML = productsHTML
-    }
-  }
-}
-
 const main = () => {
   document.querySelector('#app').innerHTML = `
     <main id="root">
@@ -109,8 +77,8 @@ const main = () => {
         <nav>
           <ul>
             <li><a href="/index.html">Home</a></li>
-            <li><a href="/about.html">About</a></li>
-            <li><a href="/products.html">Products</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/products">Products</a></li>
           </ul>
         </nav>
         <br>
@@ -121,7 +89,6 @@ const main = () => {
     </main>
   `
 
-  // Attach event listener to the parent element (event delegation)
   document.querySelector('nav').addEventListener('click', handleNavigation)
 }
 
